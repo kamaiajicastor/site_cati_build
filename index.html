@@ -61,6 +61,7 @@ main{max-width:1760px;margin:auto;padding:18px 28px 46px}
 .summary strong{color:var(--navy)}
 .summary .order-note{font-size:10.5px}
 .sections{display:grid;grid-template-columns:repeat(auto-fit,minmax(355px,1fr));gap:14px;align-items:start}
+.tech-group{min-width:0}.tech-group h2 span:first-child{font-size:15px}.tech-group .cards{padding-top:7px}
 .section{background:#FBFCFD;border:1px solid var(--line);border-top:5px solid var(--blue);border-radius:10px;overflow:hidden}
 .section.single{grid-column:1/-1;max-width:1180px;width:100%;margin:0 auto}
 .section.tech-group{min-width:0}
@@ -150,7 +151,7 @@ main{max-width:1760px;margin:auto;padding:18px 28px 46px}
     <div id="explorer" class="explorer">
       <div class="explorer-title">
         <strong>Explorar o plano</strong>
-        <span>Selecione primeiro um objetivo estratégico; os filtros seguintes se ajustam ao contexto.</span>
+        <span>Selecione um objetivo estratégico; os filtros seguintes se ajustam ao contexto.</span>
       </div>
 
       <div class="primary-filters">
@@ -174,7 +175,7 @@ main{max-width:1760px;margin:auto;padding:18px 28px 46px}
         </div>
 
         <div class="field">
-          <label for="specificFilter">Objetivo específico associado</label>
+          <label for="specificFilter">Objetivo específico</label>
           <select id="specificFilter" disabled>
             <option value="">Selecione um objetivo estratégico</option>
           </select>
@@ -240,7 +241,7 @@ const STRATEGIC_OBJECTIVES=[
   "Ambiente Produtivo",
   "Esforço Inovador",
   "Inserção Global",
-  "Tecnologis Prioritárias",
+  "Tecnologias Prioritárias",
   "Tecnologias Prioritárias",
   "Empresas Estratégicas",
   "Aplicações Prioritárias"
@@ -275,7 +276,7 @@ const COLORS={
   "Ambiente Produtivo":"#7D8892",
   "Esforço Inovador":"#2B8E9E",
   "Inserção Global":"#C28A32",
-  "Tecnologis Prioritárias":"#6B5B95",
+  "Tecnologias Prioritárias":"#6B5B95",
   "Tecnologias Prioritárias":"#6B5B95",
   "Empresas Estratégicas":"#8C6D47",
   "Aplicações Prioritárias":"#4F9B62"
@@ -294,6 +295,24 @@ const X=v=>N(v)==="x";
 const TXT=v=>v==null||String(v).trim()===""?null:String(v).replace(/\r\n/g,"\n").replace(/\r/g,"\n").trim();
 const E=v=>String(v??"—").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 const uniq=a=>[...new Set(a.filter(Boolean))].sort((x,y)=>String(x).localeCompare(String(y),"pt-BR"));
+
+function displayLabel(v){
+  const map={
+    "Packging Esportação":"Packaging – exportação",
+    "Packging diversificação":"Packaging – diversificação",
+    "Projetos CI: nº designers":"Projetos de CI – nº de designers",
+    "Projetos CI: Patentes":"Projetos de CI – patentes",
+    "Capacitação em P&D IA":"Capacitação em P&D em IA",
+    "Tecnologia e Produtos IA":"Tecnologia e produtos de IA",
+    "Ecossistemas  IA":"Ecossistemas de IA",
+    "Especialistas em Ciber":"Especialistas em cibersegurança",
+    "Tecnologia e Produtos Ciber":"Tecnologia e produtos de cibersegurança",
+    "Ecossistemas  de Ciber":"Ecossistemas de cibersegurança",
+    "Geração de tecnologia ":"Geração de tecnologia"
+  };
+  return map[v]||v;
+}
+
 
 const search=document.getElementById("search");
 const strategicFilter=document.getElementById("strategicFilter");
@@ -438,7 +457,9 @@ function fillSelect(sel,values,placeholder){
   sel.appendChild(first);
   uniq(values).forEach(v=>{
     const o=document.createElement("option");
-    o.value=v;o.textContent=v;sel.appendChild(o);
+    o.value=v;
+    o.textContent=displayLabel(v);
+    sel.appendChild(o);
   });
 }
 
@@ -554,7 +575,7 @@ function filteredActions(){
 
 function chips(items,cls=""){
   return items&&items.length
-    ?'<div class="chips">'+items.map(x=>'<span class="chip '+cls+'">'+E(x)+'</span>').join("")+'</div>'
+    ?'<div class="chips">'+items.map(x=>'<span class="chip '+cls+'">'+E(displayLabel(x))+'</span>').join("")+'</div>'
     :"—";
 }
 
@@ -601,21 +622,34 @@ function wire(){
 
 function renderTechnologyGroups(set,strategic){
   const selectedTech=techFilter.value;
-  const techs=selectedTech ? [selectedTech] : TECH_DOMAINS.filter(t=>actions.some(a=>a.technologies.includes(t)));
+  const techs=selectedTech
+    ? [selectedTech]
+    : TECH_DOMAINS.filter(t=>actions.some(a=>a.strategic.includes(strategic)&&a.technologies.includes(t)));
+
+  if(!techs.length){
+    const sec=document.createElement("section");
+    sec.className="section single";
+    sec.style.borderTopColor="#6B5B95";
+    sec.innerHTML='<h2><span>Tecnologias Prioritárias</span><span class="count">0 ações</span></h2><div class="groups"><div class="empty">Nenhuma tecnologia prioritária marcada na base.</div></div>';
+    sections.appendChild(sec);
+    return;
+  }
 
   techs.forEach(tech=>{
-    const arr=sortByRelevance(set.filter(a=>a.technologies.includes(tech)));
+    const arr=sortByRelevance(
+      set.filter(a=>a.strategic.includes(strategic)&&a.technologies.includes(tech))
+    );
 
     const sec=document.createElement("section");
-    sec.className="section";
+    sec.className="section tech-group";
     sec.style.borderTopColor="#6B5B95";
 
     let suffix="";
-    if(specificFilter.value) suffix=" · "+specificFilter.value;
+    if(specificFilter.value) suffix=" · "+displayLabel(specificFilter.value);
 
     sec.innerHTML=`
       <h2>
-        <span>${E(tech)}${E(suffix)}</span>
+        <span>${E(displayLabel(tech))}${E(suffix)}</span>
         <span class="count">${arr.length} ${arr.length===1?"ação":"ações"}</span>
       </h2>
       <div class="groups">
@@ -625,14 +659,6 @@ function renderTechnologyGroups(set,strategic){
       </div>`;
     sections.appendChild(sec);
   });
-
-  if(!techs.length){
-    const sec=document.createElement("section");
-    sec.className="section single";
-    sec.style.borderTopColor="#6B5B95";
-    sec.innerHTML='<h2><span>Tecnologias Prioritárias</span><span class="count">0 ações</span></h2><div class="groups"><div class="empty">Nenhuma tecnologia priorizada encontrada na base.</div></div>';
-    sections.appendChild(sec);
-  }
 }
 
 function renderSingleStrategic(set,strategic){
@@ -688,12 +714,12 @@ function render(){
   visible.textContent=set.length;
   updateHint();
 
-  if(strategicFilter.value){
-    if(isTechObjective(strategicFilter.value)){
-      renderTechnologyGroups(set,strategicFilter.value);
-    }else{
-      renderSingleStrategic(set,strategicFilter.value);
-    }
+  const strategic=strategicFilter.value;
+
+  if(strategic && isTechObjective(strategic)){
+    renderTechnologyGroups(set,strategic);
+  }else if(strategic){
+    renderSingleStrategic(set,strategic);
   }else{
     renderByStrategic(set);
   }
