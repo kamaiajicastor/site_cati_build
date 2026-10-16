@@ -539,8 +539,7 @@ function filteredActions(){
       ...a.strategic,...a.technologies,...a.specifics,...a.catiInstruments
     ].filter(Boolean).join(" ").toLocaleLowerCase("pt-BR");
 
-    return
-      (scope==="all"||(scope==="cati"?a.cati:!a.cati)) &&
+    return (scope==="all"||(scope==="cati"?a.cati:!a.cati)) &&
       (!strategic||a.strategic.includes(strategic)) &&
       (!tech||a.technologies.includes(tech)) &&
       (!specific||a.specifics.includes(specific)) &&
