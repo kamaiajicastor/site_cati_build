@@ -237,14 +237,13 @@ const FILE="Plano_Acao.xlsx";
 const CATI_HEADERS=["ppi","credenciamento","credencia-mento","ct-info","lei tics"];
 
 const STRATEGIC_OBJECTIVES=[
-  "Governança e Gestão",
-  "Ambiente Produtivo",
-  "Esforço Inovador",
-  "Inserção Global",
-  "Tecnologias Prioritárias",
-  "Tecnologias Prioritárias",
-  "Empresas Estratégicas",
-  "Aplicações Prioritárias"
+  {label:"Governança e Gestão",aliases:["Governança e Gestão"]},
+  {label:"Ambiente Produtivo",aliases:["Ambiente Produtivo"]},
+  {label:"Esforço Inovador",aliases:["Esforço Inovador"]},
+  {label:"Inserção Global",aliases:["Inserção Global"]},
+  {label:"Tecnologias Prioritárias",aliases:["Tecnologias Prioritárias","Tecnologis Prioritárias"]},
+  {label:"Empresas Estratégicas",aliases:["Empresas Estratégicas"]},
+  {label:"Aplicações Prioritárias",aliases:["Aplicações Prioritárias"]}
 ];
 
 const TECH_DOMAINS=[
@@ -375,11 +374,19 @@ async function load(){
   };
 
   const strategicIdx=[];
-  STRATEGIC_OBJECTIVES.forEach(name=>{
-    const i=idx(name);
-    if(i>=0&&!strategicIdx.includes(i))strategicIdx.push(i);
+  const strategicLabelByIndex={};
+  STRATEGIC_OBJECTIVES.forEach(obj=>{
+    let found=-1;
+    for(const alias of obj.aliases){
+      const i=idx(alias);
+      if(i>=0){found=i;break;}
+    }
+    if(found>=0&&!strategicIdx.includes(found)){
+      strategicIdx.push(found);
+      strategicLabelByIndex[found]=obj.label;
+    }
   });
-  strategicOrder=strategicIdx.map(i=>h[i]);
+  strategicOrder=strategicIdx.map(i=>strategicLabelByIndex[i]||h[i]);
 
   const catiIndex=I.cati>=0?I.cati:h.length;
   const firstSpecific=strategicIdx.length?Math.max(...strategicIdx)+1:-1;
@@ -413,7 +420,7 @@ async function load(){
 
     if(!Number.isFinite(num)||!title)continue;
 
-    const strategic=strategicIdx.filter(i=>X(row[i])).map(i=>h[i]);
+    const strategic=strategicIdx.filter(i=>X(row[i])).map(i=>strategicLabelByIndex[i]||h[i]);
     const technologies=techDomainIdx.filter(i=>X(row[i])).map(i=>h[i]);
     const specifics=specificIdx.filter(i=>X(row[i])).map(i=>h[i]);
     const catiInstruments=instrumentIdx.filter(i=>X(row[i])).map(i=>h[i]);
@@ -482,7 +489,8 @@ function setup(){
 }
 
 function isTechObjective(v){
-  return N(v)==="tecnologias prioritarias"||N(v)==="tecnologis prioritarias";
+  const x=N(v);
+  return x==="tecnologias prioritarias"||x==="tecnologis prioritarias";
 }
 
 function updateSpecificOptions(){
