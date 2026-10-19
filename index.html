@@ -328,6 +328,9 @@ const filterHint=document.getElementById("filterHint");
 const explorer=document.getElementById("explorer");
 
 function cleanHeader(v){return String(v??"").trim();}
+function cleanFilterValue(v){
+  return v==null ? null : String(v).replace(/\s+/g," ").trim();
+}
 
 async function load(){
   if(typeof XLSX==="undefined"){
@@ -364,7 +367,7 @@ async function load(){
     challenge:idx("Principais Desafios para a Ação"),
     lead:idx("Líder Proposto"),
     participants:idx("Participantes"),
-    actionInstrument:idx("Instrumentos"),
+    actionInstrument:idx("Instrumentos","Instrumento","Instrumento / natureza da ação","Natureza da ação"),
     impact:idx("Impacto Direto nos objetivos"),
     maturity:idx("Maturidade"),
     start:idx("Início"),
@@ -372,6 +375,10 @@ async function load(){
     source:idx("Fonte"),
     cati:idx("CATI")
   };
+  const fallbackInstrumentColumn=(I.impact>0?I.impact-1:-1);
+  if(I.actionInstrument<0 && fallbackInstrumentColumn>=0){
+    I.actionInstrument=fallbackInstrumentColumn;
+  }
 
   const strategicIdx=[];
   const strategicLabelByIndex={};
@@ -437,7 +444,7 @@ async function load(){
       challenge:TXT(row[I.challenge]),
       lead:TXT(row[I.lead]),
       participants:TXT(row[I.participants]),
-      actionInstrument:TXT(row[I.actionInstrument]),
+      actionInstrument:cleanFilterValue(TXT(I.actionInstrument>=0?row[I.actionInstrument]:null)),
       impact:TXT(row[I.impact]),
       maturity:TXT(row[I.maturity]),
       start:TXT(row[I.start]),
@@ -476,7 +483,10 @@ function setup(){
   fillSelect(impact,actions.map(a=>a.impact),"Todos");
   fillSelect(maturity,actions.map(a=>a.maturity),"Todas");
   fillSelect(lead,actions.map(a=>a.lead),"Todos");
-  fillSelect(instrumentFilter,actions.map(a=>a.actionInstrument),"Todos");
+  const instrumentValues=uniq(
+    actions.map(a=>cleanFilterValue(a.actionInstrument)).filter(Boolean)
+  );
+  fillSelect(instrumentFilter,instrumentValues,"Todos");
 
   updateSpecificOptions();
 
@@ -576,7 +586,7 @@ function filteredActions(){
       (!impact.value||a.impact===impact.value) &&
       (!maturity.value||a.maturity===maturity.value) &&
       (!lead.value||a.lead===lead.value) &&
-      (!instrumentFilter.value||a.actionInstrument===instrumentFilter.value) &&
+      (!instrumentFilter.value||N(a.actionInstrument)===N(instrumentFilter.value)) &&
       (!q||hay.includes(q));
   }));
 }
@@ -600,7 +610,7 @@ function card(a){
         <span class="tag ${ic}">${E(a.impact||"—")}</span>
         <span class="tag">${E(a.maturity||"—")}${a.start?" · "+E(a.start):""}</span>
         <span class="tag">${E(a.lead||"—")}</span>
-        ${a.actionInstrument?'<span class="tag instrument">'+E(a.actionInstrument)+'</span>':""}
+        ${a.actionInstrument?'<span class="tag instrument">'+E(cleanFilterValue(a.actionInstrument))+'</span>':""}
       </div>
       <div class="toggle"><span>Abrir detalhes</span><span>⌄</span></div>
       <div class="detail">
