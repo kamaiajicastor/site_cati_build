@@ -387,8 +387,7 @@ function vis(){
       a.origin,a.type,a.scope,...a.layers,...a.metrics,...a.metricLabels,...a.instruments
     ].filter(Boolean).join(" ").toLocaleLowerCase("pt-BR");
 
-    return
-      (scope==="all"||(scope==="cati"?a.cati:!a.cati)) &&
+    return (scope==="all"||(scope==="cati"?a.cati:!a.cati)) &&
       (!impact.value||a.impactGroup===impact.value) &&
       (!maturity.value||a.maturity===maturity.value) &&
       (!lead.value||a.lead===lead.value) &&
@@ -596,7 +595,7 @@ mobileFilters.onclick=()=>toolbar.classList.toggle("open");
   }catch(e){
     console.error(e);
     statusBox.className="fatal";
-    statusBox.innerHTML="<strong>Não foi possível carregar a base.</strong><br><br>"+E(e.message)+"<br><br>Confira se <strong>"+FILE+"</strong> está na mesma pasta do <strong>index.html</strong>.";
+    statusBox.innerHTML="<strong>Não foi possível carregar a base.</strong><br><br>"+E(e.message)+"<br><br>Confira se <strong>"+FILE+"</strong> está publicado no mesmo diretório do <strong>index.html</strong>.";
     baseNoteBox.textContent="Base indisponível.";
   }
 })();
