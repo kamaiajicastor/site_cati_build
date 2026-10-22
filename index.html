@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#12395B">
 <title>Plano de Ação CATI 2027–2030</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{--navy:#12395B;--blue:#2C6EAA;--green:#2F7D27;--ink:#1D2B36;--muted:#667784;--line:#D7E0E8;--bg:#F7F9FB;--soft:#EEF4F8;--gold:#C28A32;--violet:#6B5B95}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);min-width:320px}
@@ -47,8 +46,8 @@ main{max-width:1760px;margin:auto;padding:18px 28px 46px}.kpis{display:grid;grid
   <div id="toolbar" class="toolbar">
     <input id="search" placeholder="Buscar ação, tema, líder, instrumento…">
     <select id="impact"><option value="">Impacto: todos</option></select>
-    <select id="objectiveFilter"><option value="">Objetivo estratégico: todos</option></select>
-    <select id="specificObjectiveFilter"><option value="">Objetivo específico / resultado: todos</option></select>
+    <select id="objectiveFilter" title="Filtra as ações pelos cinco objetivos estratégicos da Agenda"><option value="">Objetivo estratégico: todos</option></select>
+    <select id="specificObjectiveFilter" title="Mostra os objetivos específicos e resultados associados ao objetivo estratégico selecionado"><option value="">Objetivo específico / resultado: todos</option></select>
     <select id="maturity"><option value="">Maturidade: todas</option></select>
     <select id="lead"><option value="">Líder: todos</option></select>
     <select id="kind"><option value="">Instrumento / natureza: todos</option></select>
@@ -65,7 +64,7 @@ main{max-width:1760px;margin:auto;padding:18px 28px 46px}.kpis{display:grid;grid
       <div class="kpi"><b id="kBroad">0</b><span>ações da agenda ampliada</span></div>
       <div class="kpi"><b id="kStart">0</b><span>ações com início definido</span></div>
     </div>
-    <div class="summary"><span><strong id="visible">0</strong> ações visíveis</span><span id="viewLabel">Organização por objetivo</span></div>
+    <div class="summary"><span><strong id="visible">0</strong> ações visíveis</span><span id="viewLabel">Organização por impacto</span></div>
     <div id="sections" class="sections"></div>
   </div>
 </main>
@@ -82,6 +81,17 @@ const OBJECTIVES=[
   {label:"Empresas Estratégicas",aliases:["Empresas Estratégicas"]},
   {label:"Aplicações Prioritárias",aliases:["Aplicações Prioritárias","Aplicação Prioritária"]}
 ];
+
+const STRATEGIC_OBJECTIVES=[
+  {value:"Esforço Inovador",label:"Ampliar esforço inovador"},
+  {value:"Inserção Global",label:"Promover inserção global"},
+  {value:"Tecnologias Estratégicas",label:"Tecnologias Estratégicas"},
+  {value:"Empresas Estratégicas",label:"Fortalecer Empresas Estratégicas"},
+  {value:"Aplicações Prioritárias",label:"Aplicações Prioritárias"}
+];
+
+const OBJECTIVE_DISPLAY=Object.fromEntries(STRATEGIC_OBJECTIVES.map(x=>[x.value,x.label]));
+const CACHE_KEY="cati_plano_acao_cache_v9";
 
 const COLORS={
   "Governança e Gestão":"#173A5E",
@@ -157,10 +167,36 @@ function specificDisplay(header,parent,techFamily){
   return p ? p+" — "+h : h;
 }
 
-async function load(){
-  if(typeof XLSX==="undefined") throw Error("O componente de leitura do Excel não carregou. A rede pode estar bloqueando o CDN jsDelivr.");
+async function ensureXLSX(){
+  if(typeof XLSX!=="undefined") return;
+  const sources=[
+    "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
+    "https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+  ];
+  for(const src of sources){
+    try{
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement("script");
+        let done=false;
+        const finish=(ok)=>{if(done)return;done=true;clearTimeout(timer);ok?resolve():reject(new Error("falha ao carregar "+src))};
+        const timer=setTimeout(()=>finish(false),5000);
+        s.src=src;
+        s.async=true;
+        s.onload=()=>finish(typeof XLSX!=="undefined");
+        s.onerror=()=>finish(false);
+        document.head.appendChild(s);
+      });
+      if(typeof XLSX!=="undefined") return;
+    }catch(e){ console.warn(e.message); }
+  }
+  throw Error("Não foi possível carregar o componente de leitura do Excel. A rede está bloqueando as fontes externas necessárias (jsDelivr, unpkg e cdnjs)." );
+}
 
-  const res=await fetch(FILE+"?v="+Date.now(),{cache:"no-store"});
+async function load(){
+  await ensureXLSX();
+
+  const res=await fetch(FILE,{cache:"no-cache"});
   if(!res.ok) throw Error(FILE+" não encontrado.");
 
   const wb=XLSX.read(await res.arrayBuffer(),{type:"array"});
@@ -214,7 +250,7 @@ async function load(){
     }
   });
 
-  objOrder=OBJECTIVES.map(o=>o.label).filter(o=>Object.values(objectiveLabelByIndex).includes(o));
+  objOrder=STRATEGIC_OBJECTIVES.map(o=>o.value).filter(o=>Object.values(objectiveLabelByIndex).includes(o));
 
   const ms=oi.length?Math.max(...oi)+1:-1;
   const me=I.cati>=0?I.cati-1:h.length-1;
@@ -306,7 +342,35 @@ async function load(){
 
   parsed.sort((a,b)=>a.n-b.n);
   actions=parsed;
+
+  try{
+    localStorage.setItem(CACHE_KEY,JSON.stringify({
+      actions,
+      objOrder,
+      specificOptions,
+      savedAt:Date.now()
+    }));
+  }catch(e){
+    console.warn("Não foi possível gravar cache local:",e);
+  }
+
   return sn;
+}
+
+function restoreCache(){
+  try{
+    const raw=localStorage.getItem(CACHE_KEY);
+    if(!raw)return false;
+    const c=JSON.parse(raw);
+    if(!c||!Array.isArray(c.actions)||!c.actions.length)return false;
+    actions=c.actions;
+    objOrder=Array.isArray(c.objOrder)&&c.objOrder.length?c.objOrder:STRATEGIC_OBJECTIVES.map(x=>x.value);
+    specificOptions=Array.isArray(c.specificOptions)?c.specificOptions:[];
+    return true;
+  }catch(e){
+    console.warn("Cache local inválido:",e);
+    return false;
+  }
 }
 
 function fill(sel,vals){
@@ -352,7 +416,7 @@ function setup(){
   fill(impact,IMPACT_ORDER.filter(v=>actions.some(a=>a.impactGroup===v)));
   fill(maturity,actions.map(a=>a.maturity));
   fill(lead,actions.map(a=>a.lead));
-  fill(objectiveFilter,objOrder);
+  fillPairs(objectiveFilter,STRATEGIC_OBJECTIVES.filter(x=>objOrder.includes(x.value)));
   fill(kind,actions.map(a=>a.type));
   updateSpecificFilter();
 
@@ -471,7 +535,7 @@ function render(){
         const d=document.createElement("div");
         d.className="group";
         d.innerHTML=
-          '<div class="ghead"><strong>'+E(o)+'</strong><span>'+l.length+' '+(l.length===1?"ação":"ações")+'</span></div>'+
+          '<div class="ghead"><strong>'+E(OBJECTIVE_DISPLAY[o]||o)+'</strong><span>'+l.length+' '+(l.length===1?"ação":"ações")+'</span></div>'+
           '<div class="cards">'+sortByRelevance(l).map(card).join("")+'</div>';
         g.appendChild(d);
       });
@@ -496,7 +560,7 @@ function render(){
       const s=document.createElement("section");
       s.className="section";
       s.style.borderTopColor=COLORS[o]||"#2C6EAA";
-      s.innerHTML='<h2><span>'+E(o)+'</span><span class="count">'+arr.length+' '+(arr.length===1?"ação":"ações")+'</span></h2><div class="groups"></div>';
+      s.innerHTML='<h2><span>'+E(OBJECTIVE_DISPLAY[o]||o)+'</span><span class="count">'+arr.length+' '+(arr.length===1?"ação":"ações")+'</span></h2><div class="groups"></div>';
 
       const g=s.querySelector(".groups");
 
@@ -583,6 +647,29 @@ mobileFilters.onclick=()=>toolbar.classList.toggle("open");
   const statusBox=document.getElementById("status");
   const appBox=document.getElementById("app");
   const baseNoteBox=document.getElementById("baseNote");
+
+  const cached=restoreCache();
+
+  if(cached){
+    setup();
+    statusBox.remove();
+    appBox.hidden=false;
+    baseNoteBox.textContent="Base carregada · verificando atualização…";
+    render();
+
+    // Atualiza silenciosamente em segundo plano. Se o Excel mudou,
+    // a tela é redesenhada com a versão nova; se a rede falhar, mantém o cache.
+    try{
+      await load();
+      setup();
+      baseNoteBox.textContent="Base: "+FILE+" · "+actions.length+" ações carregadas";
+      render();
+    }catch(e){
+      console.warn("Atualização em segundo plano indisponível:",e);
+      baseNoteBox.textContent="Base carregada em cache · atualização automática temporariamente indisponível";
+    }
+    return;
+  }
 
   try{
     await load();
