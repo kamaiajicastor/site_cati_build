@@ -28,10 +28,22 @@ main{max-width:1760px;margin:auto;padding:18px 28px 46px}.kpis{display:grid;grid
 .empty,.loading,.fatal{background:white;border:1px solid var(--line);border-radius:10px;padding:18px;color:var(--muted)}.fatal{border-left:5px solid #B55448}
 @media(max-width:720px){.header{padding:11px 12px 9px}h1{font-size:20px}.sub{font-size:11px}.mobileFilters{display:block}.toolbar{display:none;align-items:stretch}.toolbar.open{display:flex}.toolbar input,.toolbar select{width:100%;max-width:none}.view{width:100%}.view button{flex:1}.scope{overflow-x:auto;flex-wrap:nowrap}.scope .label{display:none!important}main{padding:10px 9px 36px}.kpis{grid-template-columns:repeat(2,1fr);gap:6px}.kpi{text-align:center;padding:8px}.kpi b{font-size:18px}.kpi span{font-size:9px}.sections{grid-template-columns:1fr;gap:10px}.summary{font-size:10px}.section h2{position:sticky;top:94px;background:white;z-index:2}}
 @media print{header{position:static}.toolbar,.scope,.mobileFilters{display:none!important}.sections{grid-template-columns:1fr 1fr}.detail{display:block!important}.toggle{display:none}}
-#specificObjectiveFilter{min-width:320px;max-width:470px}
+.specificWrap{display:flex;flex-direction:column;gap:3px;min-width:310px;max-width:470px;flex:1 1 345px;position:relative}.specificWrap select{width:100%;min-width:0!important;max-width:none!important}.specificWrap select:disabled{background:#F2F5F7;color:#81909B;cursor:not-allowed}.specificWrap input{width:100%;font-size:11px;min-height:30px;padding:5px 9px;border-color:#C8D9E5}.filterHint{font-size:10px;color:#687C8E;padding-left:3px}.specificWrap.ready .filterHint{color:#326E63}.specificWrap.ready select{border-color:#AFC9DB}
 #objectiveFilter{min-width:210px}
 #impact{min-width:150px}#transversalFilter{min-width:205px}
-@media(max-width:720px){#specificObjectiveFilter,#objectiveFilter,#impact,#transversalFilter{min-width:0;max-width:none}}
+@media(max-width:720px){.specificWrap,#specificObjectiveFilter,#objectiveFilter,#impact,#transversalFilter{min-width:0;max-width:none;width:100%}}
+
+/* Interface progressiva: foco na busca e no objetivo */
+.uxNav{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-top:15px;padding-top:13px;border-top:1px solid #E7EDF2}.uxLead{font-size:11px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.04em}
+.uxNav .view{gap:5px;border:0;background:transparent;overflow:visible;flex-wrap:wrap}.uxNav .view button{border:1px solid #CEDAE4!important;border-radius:8px!important;background:#fff;padding:10px 14px;font-size:12px;min-height:40px}.uxNav .view button.active{background:var(--navy);border-color:var(--navy)!important;color:white}
+.quickFilters{display:grid;grid-template-columns:minmax(190px,1.1fr) minmax(210px,.85fr) minmax(280px,1.25fr);gap:11px;margin-top:13px;align-items:start}
+.quickFilters label{display:block;font-size:11px;color:#496177;font-weight:700;margin-bottom:5px}.quickFilters input,.quickFilters select{width:100%;border:1px solid #CFDAE4;border-radius:8px;min-height:43px;padding:9px 11px;background:white;color:var(--ink);font-size:13px}.quickFilters input:focus,.quickFilters select:focus,.toolbar select:focus{outline:2px solid #6AA5D4;outline-offset:1px}
+.quickFilters #search{max-width:none;min-width:0}.quickFilters .specificWrap{min-width:0;max-width:none;width:100%;gap:0}.quickFilters .specificWrap select{min-height:43px}.quickFilters .specificWrap input{margin-top:5px;min-height:36px}.quickFilters .filterHint{margin-top:5px}
+.uxTools{display:flex;align-items:center;gap:9px;margin-top:10px;flex-wrap:wrap}.uxTools button{border:1px solid #D0DCE5;background:white;color:var(--navy);font-weight:650;font-size:11px;padding:8px 11px;border-radius:7px;cursor:pointer}.uxTools #clear{margin-left:auto}.activeFilters{display:flex;gap:5px;align-items:center;flex-wrap:wrap;flex:1}.filterChip{display:inline-block;background:#EAF2F8;color:#244A6A;border:1px solid #D5E4EF;padding:5px 8px;border-radius:99px;font-size:10px;max-width:245px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#toolbar{display:none;margin-top:7px;border:1px solid #E0E8EE;background:#F8FAFC;padding:11px;border-radius:9px}#toolbar.open{display:flex}.toolbar select{flex:1 1 180px}.toolbar button{font-size:11px}
+@media(max-width:900px){.quickFilters{grid-template-columns:1fr 1fr}.quickFilters .specificWrap{grid-column:1/-1}.uxNav{align-items:flex-start}}
+@media(max-width:720px){.mobileFilters{display:none}.quickFilters{grid-template-columns:1fr;gap:8px}.quickFilters .specificWrap{grid-column:auto}.uxNav .view{display:flex;width:100%}.uxNav .view button{flex:1;min-width:94px;padding:8px 6px}.uxTools #clear{margin-left:0}#toolbar.open{display:flex}.header{padding-bottom:12px}}
+@media print{.uxTools,.uxNav,.quickFilters,#toolbar{display:none!important}}
 </style>
 </head>
 <body>
@@ -43,18 +55,24 @@ main{max-width:1760px;margin:auto;padding:18px 28px 46px}.kpis{display:grid;grid
     <button class="pill" data-scope="cati">Vinculadas ao CATI <b id="nCati">—</b></button>
     <button class="pill" data-scope="broad">Agenda ampliada <b id="nBroad">—</b></button>
   </div>
-  <div id="toolbar" class="toolbar">
-    <input id="search" placeholder="Buscar ação, tema, líder, instrumento…">
-    <select id="impact"><option value="">Impacto: todos</option></select>
-    <select id="transversalFilter" title="Filtrar ações vinculadas a Governança e Gestão ou Ambiente Produtivo"><option value="">Eixo transversal: todos</option></select>
-     <select id="objectiveFilter" title="Filtra as ações pelos cinco objetivos estratégicos da Agenda"><option value="">Objetivo estratégico: todos</option></select>
-    <select id="specificObjectiveFilter" title="Mostra os objetivos específicos e resultados associados ao objetivo estratégico selecionado"><option value="">Objetivo específico / resultado: todos</option></select>
-    <select id="maturity"><option value="">Maturidade: todas</option></select>
-    <select id="lead"><option value="">Líder: todos</option></select>
-    <select id="natureFilter" title="Natureza da ação conforme a coluna Instrumentos da planilha"><option value="">Natureza da ação: todas</option></select>
-    <select id="catiInstrumentFilter" title="Instrumentos CATI marcados nas colunas específicas da planilha"><option value="">Instrumento CATI: todos</option></select>
-    <div class="view"><button id="byImpact" class="active">Por impacto</button><button id="byObjective">Por objetivo</button><button id="byTransversal">Por eixo transversal</button></div>
-    <button id="expand">Expandir visíveis</button><button id="collapse">Recolher</button><button id="clear">Limpar filtros</button>
+  <div class="uxNav" aria-label="Modos de exploração">
+    <span class="uxLead">Organizar ações</span>
+    <div class="view" role="group" aria-label="Organização das ações"><button id="byImpact" class="active" aria-pressed="true">Por impacto</button><button id="byObjective" aria-pressed="false">Por objetivo estratégico</button></div>
+  </div>
+  <div class="quickFilters">
+    <div class="quickSearch"><label for="search">Busca livre</label><input id="search" type="search" placeholder="Buscar ação, instituição, tema ou instrumento…"></div>
+    <div class="quickObjective"><label for="objectiveFilter">Objetivo estratégico</label><select id="objectiveFilter" title="Selecione um objetivo estratégico"><option value="">Todos os objetivos estratégicos</option></select></div>
+    <div class="specificWrap" id="specificWrap"><label for="specificObjectiveFilter">Objetivo específico / resultado</label><select id="specificObjectiveFilter" disabled title="Selecione um objetivo estratégico antes de escolher o objetivo específico"><option value="">Selecione primeiro um objetivo estratégico</option></select><input id="specificSearch" type="search" placeholder="Pesquisar nesta lista…" aria-label="Pesquisar objetivos específicos" hidden autocomplete="off"><span class="filterHint" id="specificHint">Escolha primeiro o objetivo estratégico</span></div>
+  </div>
+  <div class="uxTools"><button id="advancedToggle" type="button" aria-expanded="false" aria-controls="toolbar">⚙ Mais filtros <span id="activeCount"></span></button><div id="activeFilters" class="activeFilters" aria-live="polite"></div><button id="clear" type="button">Limpar filtros</button></div>
+  <div id="toolbar" class="toolbar" aria-label="Filtros avançados">
+    <select id="impact" aria-label="Impacto"><option value="">Impacto: todos</option></select>
+    <select id="transversalFilter" title="Filtrar ações relacionadas a Governança e Gestão ou Ambiente Produtivo"><option value="">Eixo transversal: todos</option></select>
+    <select id="maturity" aria-label="Maturidade"><option value="">Maturidade: todas</option></select>
+    <select id="lead" aria-label="Líder"><option value="">Líder: todos</option></select>
+    <select id="natureFilter" title="Natureza da ação conforme a planilha"><option value="">Natureza da ação: todas</option></select>
+    <select id="catiInstrumentFilter" title="Instrumentos CATI"><option value="">Instrumento CATI: todos</option></select>
+    <button id="expand">Expandir visíveis</button><button id="collapse">Recolher</button>
   </div>
 </div></header>
 <main>
@@ -85,7 +103,25 @@ const E=v=>String(v??"—").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"
 const uniq=a=>[...new Set(a.filter(Boolean))].sort((x,y)=>String(x).localeCompare(String(y),"pt-BR"));
 function fill(sel,vals){while(sel.options.length>1)sel.remove(1);uniq(vals).forEach(v=>{let o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o)})}
 function fillPairs(sel,pairs){while(sel.options.length>1)sel.remove(1);const seen=new Set; pairs.forEach(p=>{if(!p||!p.value||seen.has(p.value))return;seen.add(p.value);let o=document.createElement("option");o.value=p.value;o.textContent=p.label||p.value;sel.appendChild(o)})}
-function updateSpecificFilter(){const strategic=objectiveFilter.value;const available=new Set(actions.filter(a=>!strategic||a.layers.includes(strategic)).flatMap(a=>a.metrics));fillPairs(specificObjectiveFilter,specificOptions.filter(p=>available.has(p.raw||p.value)).map(p=>({value:p.raw||p.value,label:p.label})));specificObjectiveFilter.disabled=available.size===0}
+const SPECIFIC_PREFIX={"Esforço Inovador":"Esforço Inovador","Inserção Global":"Inserção Global","Tecnologias Estratégicas":"Tecnologias Estratégicas","Empresas Estratégicas":"Empresas Estratégicas","Aplicações Prioritárias":"Aplicação Prioritária"};
+const specificSearch=document.getElementById("specificSearch"),specificHint=document.getElementById("specificHint"),specificWrap=document.getElementById("specificWrap");
+function updateSpecificFilter(){
+ const objective=objectiveFilter.value,previous=specificObjectiveFilter.value;
+ const prefix=SPECIFIC_PREFIX[objective];
+ const arr=objective?actions.filter(a=>a.layers.includes(objective)):[];
+ const avail=new Set(arr.flatMap(a=>a.metrics));
+ const terms=N(specificSearch.value);
+ const options=specificOptions.filter(p=>avail.has(p.raw||p.value) && prefix && (p.label||"").startsWith(prefix+" —") || avail.has(p.raw||p.value) && prefix==="Tecnologias Estratégicas" && (p.label||"").startsWith(prefix+" ·"));
+ specificObjectiveFilter.replaceChildren();
+ const blank=document.createElement("option");blank.value="";blank.textContent=!objective?"Selecione primeiro um objetivo estratégico":"Todos os objetivos específicos ("+options.length+")";specificObjectiveFilter.appendChild(blank);
+ const byGroup=new Map();
+ for(const p of options){const label=p.label||p.raw||p.value;const parts=label.includes(" — ")?label.split(" — "): [label];const section=objective==="Tecnologias Estratégicas"? parts[0].split(" · ").slice(1).join(" · ")||"Outros":"Objetivos específicos";let short=parts.slice(1).join(" — ")||label;short=short.replace(/^([^—]+) — $/,'$1');if(terms && !N(label+" "+short).includes(terms))continue;if(!byGroup.has(section))byGroup.set(section,[]);byGroup.get(section).push({raw:p.raw||p.value,label:short})}
+ for(const [group,items] of byGroup){const parent=objective==="Tecnologias Estratégicas"?Object.assign(document.createElement("optgroup"),{label:group}):specificObjectiveFilter;for(const item of items){const opt=document.createElement("option");opt.value=item.raw;opt.textContent=item.label;parent.appendChild(opt)}if(parent!==specificObjectiveFilter)specificObjectiveFilter.appendChild(parent)}
+ specificObjectiveFilter.disabled=!objective||options.length===0;specificSearch.hidden=!objective;specificSearch.disabled=!objective;specificWrap.classList.toggle("ready",!!objective);
+ if(previous && [...specificObjectiveFilter.options].some(o=>o.value===previous))specificObjectiveFilter.value=previous;
+ specificHint.textContent=!objective?"Escolha primeiro o objetivo estratégico":options.length+" objetivo"+(options.length===1?" específico disponível":"s específicos disponíveis")+(terms?" · lista pesquisada":"");
+}
+
 function setup(){fill(impact,IMPACT_ORDER.filter(v=>actions.some(a=>a.impactGroup===v)));fillPairs(transversalFilter,TRANSVERSAL.map(v=>({value:v,label:v})));fillPairs(objectiveFilter,STRATEGIC_OBJECTIVES.filter(x=>objOrder.includes(x.value)));fill(maturity,actions.map(a=>a.maturity));fill(lead,actions.map(a=>a.lead));fill(natureFilter,actions.map(a=>a.nature));fill(catiInstrumentFilter,actions.flatMap(a=>a.catiInstruments));updateSpecificFilter();const c=actions.filter(a=>a.cati).length,s=actions.filter(a=>a.start).length;[kTotal,nAll].forEach(x=>x.textContent=actions.length);[kCati,nCati].forEach(x=>x.textContent=c);[kBroad,nBroad].forEach(x=>x.textContent=actions.length-c);kStart.textContent=s}
 function relevanceRank(a){return {"estruturante":5,"muito alto":4,"alto":3,"medio":2,"baixo":1}[N(a.impactGroup||a.impact)]??0}
 function sortByRelevance(arr){return [...arr].sort((a,b)=>relevanceRank(b)-relevanceRank(a)||a.n-b.n)}
@@ -96,7 +132,7 @@ function wire(){document.querySelectorAll(".toggle").forEach(t=>t.onclick=()=>{c
 function render(){
  const root=document.getElementById("sections");root.innerHTML="";
  const set=vis();document.getElementById("visible").textContent=set.length;
- document.getElementById("viewLabel").textContent=view==="impact"?"Organização por impacto":view==="objective"?"Organização por objetivo estratégico":"Organização por eixo transversal (uma ação pode estar em mais de um grupo)";
+ document.getElementById("viewLabel").textContent=view==="impact"?"Organização por impacto":"Organização por objetivo estratégico";
  const group=(parent,title,arr)=>{if(!arr.length)return;const d=document.createElement("div");d.className="group";d.innerHTML='<div class="ghead"><strong>'+E(title)+'</strong><span>'+arr.length+' '+(arr.length===1?'ação':'ações')+'</span></div><div class="cards">'+sortByRelevance(arr).map(card).join("")+'</div>';parent.appendChild(d)};
  const section=(title,arr,color)=>{const e=document.createElement("section");e.className="section";e.style.borderTopColor=color||"#2C6EAA";e.innerHTML='<h2><span>'+E(title)+'</span><span class="count">'+arr.length+' '+(arr.length===1?'ação':'ações')+'</span></h2><div class="groups"></div>';root.appendChild(e);return e.querySelector(".groups")};
  if(view==="impact"){
@@ -114,9 +150,12 @@ function render(){
    TRANSVERSAL.forEach(o=>{const arr=set.filter(a=>a.layers.includes(o));if(arr.length){const g=section(o,arr,o==="Governança e Gestão"?"#487B9E":"#A27C4A");group(g,"Ações vinculadas",arr)}});
    const other=set.filter(a=>!TRANSVERSAL.some(o=>a.layers.includes(o)));if(other.length){const g=section("Sem vínculo com eixos transversais",other,"#96A4B0");group(g,"Demais ações",other)}
  }
- wire();
+ wire();updateActiveFilters();
 }
-document.querySelectorAll(".pill").forEach(b=>b.onclick=()=>{scope=b.dataset.scope;document.querySelectorAll(".pill").forEach(x=>x.classList.toggle("active",x===b));render()});let debounce;search.oninput=()=>{clearTimeout(debounce);debounce=setTimeout(render,120)};[impact,transversalFilter,maturity,lead,specificObjectiveFilter,natureFilter,catiInstrumentFilter].forEach(x=>x.oninput=render);objectiveFilter.oninput=()=>{specificObjectiveFilter.value="";updateSpecificFilter();render()};byImpact.onclick=()=>{view="impact";byImpact.classList.add("active");byObjective.classList.remove("active");byTransversal.classList.remove("active");render()};byObjective.onclick=()=>{view="objective";byObjective.classList.add("active");byImpact.classList.remove("active");byTransversal.classList.remove("active");render()};byTransversal.onclick=()=>{view="transversal";byTransversal.classList.add("active");byImpact.classList.remove("active");byObjective.classList.remove("active");render()};clear.onclick=()=>{search.value=impact.value=transversalFilter.value=maturity.value=lead.value=objectiveFilter.value=specificObjectiveFilter.value=natureFilter.value=catiInstrumentFilter.value="";scope="all";document.querySelectorAll(".pill").forEach(x=>x.classList.toggle("active",x.dataset.scope==="all"));updateSpecificFilter();render()};expand.onclick=()=>document.querySelectorAll(".card").forEach(c=>{c.classList.add("open");c.querySelector(".toggle span").textContent="Recolher detalhes"});collapse.onclick=()=>document.querySelectorAll(".card").forEach(c=>{c.classList.remove("open");c.querySelector(".toggle span").textContent="Abrir detalhes"});mobileFilters.onclick=()=>toolbar.classList.toggle("open");
+document.querySelectorAll(".pill").forEach(b=>b.onclick=()=>{scope=b.dataset.scope;document.querySelectorAll(".pill").forEach(x=>x.classList.toggle("active",x===b));render()});let debounce;search.oninput=()=>{clearTimeout(debounce);debounce=setTimeout(render,120)};[impact,transversalFilter,maturity,lead,specificObjectiveFilter,natureFilter,catiInstrumentFilter].forEach(x=>x.oninput=render);objectiveFilter.oninput=()=>{specificObjectiveFilter.value="";specificSearch.value="";updateSpecificFilter();render()};specificSearch.oninput=()=>updateSpecificFilter();byImpact.onclick=()=>{view="impact";byImpact.classList.add("active");byObjective.classList.remove("active");byImpact.setAttribute("aria-pressed","true");byObjective.setAttribute("aria-pressed","false");render()};byObjective.onclick=()=>{view="objective";byObjective.classList.add("active");byImpact.classList.remove("active");byObjective.setAttribute("aria-pressed","true");byImpact.setAttribute("aria-pressed","false");render()};clear.onclick=()=>{search.value=impact.value=transversalFilter.value=maturity.value=lead.value=objectiveFilter.value=specificObjectiveFilter.value=natureFilter.value=catiInstrumentFilter.value="";specificSearch.value="";scope="all";document.querySelectorAll(".pill").forEach(x=>x.classList.toggle("active",x.dataset.scope==="all"));updateSpecificFilter();render()};expand.onclick=()=>document.querySelectorAll(".card").forEach(c=>{c.classList.add("open");c.querySelector(".toggle span").textContent="Recolher detalhes"});collapse.onclick=()=>document.querySelectorAll(".card").forEach(c=>{c.classList.remove("open");c.querySelector(".toggle span").textContent="Abrir detalhes"});mobileFilters.onclick=()=>toolbar.classList.toggle("open");
+advancedToggle.onclick=()=>{const opened=toolbar.classList.toggle("open");advancedToggle.setAttribute("aria-expanded",String(opened));};
+function updateActiveFilters(){const entries=[["Busca",search],["Objetivo",objectiveFilter],["Resultado",specificObjectiveFilter],["Impacto",impact],["Eixo",transversalFilter],["Maturidade",maturity],["Líder",lead],["Natureza",natureFilter],["Instrumento",catiInstrumentFilter]];const selected=entries.filter(([label,el])=>el.value).map(([label,el])=>label+": "+(el.selectedOptions?.[0]?.textContent||el.value));if(scope!=="all")selected.unshift(scope==="cati"?"Vinculadas ao CATI":"Agenda ampliada");activeCount.textContent=selected.length?"("+selected.length+")":"";activeFilters.replaceChildren(...selected.map(t=>{let c=document.createElement("span");c.className="filterChip";c.title=t;c.textContent=t;return c;}));}
+
 setup();document.getElementById("status").remove();document.getElementById("app").hidden=false;baseNote.textContent="Base publicada · "+actions.length+" ações · carregamento imediato";render();
 </script>
 </body></html>
