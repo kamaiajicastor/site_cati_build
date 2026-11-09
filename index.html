@@ -271,8 +271,23 @@ function render(){
      group(g,"Outras ações sem eixo marcado",arr.filter(a=>!seen.has(a.uid)));
    });
  }else if(view==="objective"){
-   objOrder.forEach(o=>{const arr=set.filter(a=>a.layers.includes(o));if(!arr.length)return;const g=section(OBJECTIVE_DISPLAY[o]||o,arr,COLORS[o]);const m=new Map();arr.forEach(a=>{const k=a.nature||"Sem classificação";if(!m.has(k))m.set(k,[]);m.get(k).push(a)});[...m].sort((a,b)=>a[0].localeCompare(b[0],"pt-BR")).forEach(([k,v])=>group(g,k,v))});
-   const other=set.filter(a=>!objOrder.some(o=>a.layers.includes(o)));if(other.length){const g=section("Ações sem vínculo com os cinco objetivos",other,"#667784");TRANSVERSAL.forEach(o=>group(g,o,other.filter(a=>a.layers.includes(o))));group(g,"Outras ações",other.filter(a=>!TRANSVERSAL.some(o=>a.layers.includes(o))))}
+   // Dentro de cada objetivo estratégico, mostrar primeiro as ações de maior impacto.
+   // Os cartões em cada faixa preservam a ordem original das ações na planilha.
+   const addImpactGroups=(parent,arr)=>{
+     IMPACT_ORDER.forEach(level=>group(parent,level,arr.filter(a=>a.impactGroup===level)));
+     group(parent,"Impacto não informado",arr.filter(a=>!IMPACT_ORDER.includes(a.impactGroup)));
+   };
+   objOrder.forEach(o=>{
+     const arr=set.filter(a=>a.layers.includes(o));
+     if(!arr.length)return;
+     const g=section(OBJECTIVE_DISPLAY[o]||o,arr,COLORS[o]);
+     addImpactGroups(g,arr);
+   });
+   const other=set.filter(a=>!objOrder.some(o=>a.layers.includes(o)));
+   if(other.length){
+     const g=section("Ações sem vínculo com os cinco objetivos",other,"#667784");
+     addImpactGroups(g,other);
+   }
  }else{
    TRANSVERSAL.forEach(o=>{const arr=set.filter(a=>a.layers.includes(o));if(arr.length){const g=section(o,arr,o==="Governança e Gestão"?"#487B9E":"#A27C4A");group(g,"Ações vinculadas",arr)}});
    const other=set.filter(a=>!TRANSVERSAL.some(o=>a.layers.includes(o)));if(other.length){const g=section("Sem vínculo com eixos transversais",other,"#96A4B0");group(g,"Demais ações",other)}
